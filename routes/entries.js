@@ -1,24 +1,34 @@
-var express = require('express');
-var router = express.Router();
-var Entries = require('./entries.json');
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
+const Model = require('../models/entry');
 
 router.route('/')
   //Return all entries
   .get(function (req, res, next) {
-    res.json(Entries);
+    Model.find({}, function (err, entries) {
+      if (err) return next(err);
+      res.json(entries);
+    });
+  })
+
+  //Save a new entry
+  .post(function (req, res, next) {
+    Model.create(req.body, function (err, entry) {
+      if (err) return next(err);
+      res.json({
+        'id': entry._id
+      });
+    });
   });
 
 router.route('/:entryId')
   //Return one entry identified by request parameter
   .get(function (req, res, next) {
-    var entry = Entries.find(function (entry) {
-      return entry.id == req.params.entryId;
-    });
-    if (entry){
+    Model.findById(req.params.entryId, function (err, entry) {
+      if (err) return next(err);
       res.json(entry);
-    }else{
-      res.json({ error: "Entry not found"});
-    }
+    });
   });
 
 module.exports = router;
