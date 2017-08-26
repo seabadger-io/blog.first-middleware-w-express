@@ -6,10 +6,12 @@ const Model = require('../models/entry');
 router.route('/')
   //Return all entries
   .get(function (req, res, next) {
-    Model.find({}, function (err, entries) {
-      if (err) return next(err);
-      res.json(entries);
-    });
+    Model.find({})
+      .populate('author', 'email displayName')
+      .exec(function (err, entries) {
+        if (err) return next(err);
+        res.json(entries);
+      });
   })
 
   //Save a new entry
@@ -25,9 +27,39 @@ router.route('/')
 router.route('/:entryId')
   //Return one entry identified by request parameter
   .get(function (req, res, next) {
-    Model.findById(req.params.entryId, function (err, entry) {
+    Model.findById(req.params.entryId)
+      .populate('author', 'email displayName')
+      .exec(function (err, entry) {
+        if (err) return next(err);
+        if (entry) {
+          res.json(entry);
+        } else {
+          next();
+        }
+      });
+  })
+
+  //Update an existing entry
+  .put(function (req, res, next) {
+    Model.findByIdAndUpdate(req.params.entryId, {
+      $set: req.body
+    }, {
+      new: true
+    }, function (err, entry) {
       if (err) return next(err);
-      res.json(entry);
+      if (entry) {
+        res.json(entry);
+      } else {
+        next();
+      }
+    });
+  })
+
+  //Delete an existing entry
+  .delete(function (req, res, next) {
+    Model.findByIdAndRemove(req.params.entryId, function (err, resp) {
+      if (err) return next(err);
+      res.json(resp);
     });
   });
 
