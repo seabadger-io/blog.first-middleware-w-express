@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -21,5 +22,9 @@ const userSchema = new Schema({
     default: ''
   }
 });
+
+userSchema.methods.fullName = function () {
+  return this.firstName + " " + this.lastName;
+};
 
 module.exports = mongoose.model('User', userSchema);
