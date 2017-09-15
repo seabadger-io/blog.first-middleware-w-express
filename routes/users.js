@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 const Model = require('../models/user');
 const entryModel = require('../models/entry');
 
@@ -59,7 +58,7 @@ router.route('/:userId')
       author: req.params.userId
     }, function (err, resp) {
       if (err) return next(err);
-      if (typeof resp === 'object') {
+      if (resp !== null) {
         err = new Error("This user owns entries, remove the entries first");
         err.status = 412; //precondition failed
         return next(err);

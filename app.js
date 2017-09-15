@@ -24,7 +24,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-mongoose.connect('mongodb://localhost/blog_sample', {
+var dburl='mongodb://localhost/blog_sample';
+mongoose.connect(dburl, {
   useMongoClient: true
 }).then(
   () => {
