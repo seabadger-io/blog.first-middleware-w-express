@@ -1,16 +1,22 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
-var index = require('./routes/index');
-var users = require('./routes/users');
-var entries = require('./routes/entries');
+//PassportJS to support local username/password strategy
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const User = require('./models/user');
+//Express routers
+const index = require('./routes/index');
+const users = require('./routes/users');
+const entries = require('./routes/entries');
+const useradmin = require('./routes/admin/users');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -37,9 +43,25 @@ mongoose.connect(dburl, {
   }
 );
 
+//Setup session handler
+app.use(require('express-session')({
+  secret: 'AddYourSessionSecretHere',
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+//Setup routers
 app.use('/', index);
 app.use('/users', users);
 app.use('/entries', entries);
+app.use('/admin/users', useradmin);
+
+//Configure passport
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -54,7 +76,7 @@ app.use(function(err, req, res, next) {
   var error = req.app.get('env') === 'development' ? err : {};
   res.status(err.status || 500).json({
     message: err.message,
-    error: err
+    error: error
   });
 });
 

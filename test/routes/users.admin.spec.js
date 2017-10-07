@@ -3,12 +3,25 @@ const sinon = require('sinon');
 const request = require('supertest');
 const express = require('express');
 
-var userRoute = require('../../routes/users');
+var mockUser = { _id: '507f1f77bcf86cd799439011', email: 'test@email.moc', displayName: 'Test Name' };
+var mockEntry = { _id: '507f1f77bcf86cd799439012', title: 'Test Title', author: '507f1f77bcf86cd799439011' };
+var adminUser = { _id: '507f1f77bcf86cd799439011', email: 'test@email.moc', displayName: 'Test Name', admin: true };
+
+var session = require('../../routes/shared/session');
+sinon.stub(session, 'checkSession').callsFake(function (req, res, next) {
+  req.user = adminUser;
+  return next();
+});
+
+sinon.stub(session, 'checkAdminSession').callsFake(function (req, res, next) {
+  req.user = adminUser;
+  return next();
+});
+
+var userRoute = require('../../routes/admin/users');
 var User = require('../../models/user');
 var Entry = require('../../models/entry');
 
-var mockUser = { _id: '507f1f77bcf86cd799439011', email: 'test@email.moc', displayName: 'Test Name' };
-var mockEntry = { _id: '507f1f77bcf86cd799439012', title: 'Test Title', author: '507f1f77bcf86cd799439011' };
 var app = express()
 app.use('/users', userRoute);
 //define error handler

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 const Schema = mongoose.Schema;
+const passportLocalMongoose = require('passport-local-mongoose');
 
 const userSchema = new Schema({
   email: {
@@ -20,11 +21,17 @@ const userSchema = new Schema({
   lastName: {
     type: String,
     default: ''
+  },
+  admin: {
+    type: Boolean,
+    default: false
   }
 });
 
 userSchema.methods.fullName = function () {
   return this.firstName + " " + this.lastName;
 };
+
+userSchema.plugin(passportLocalMongoose, { usernameField: 'email' });
 
 module.exports = mongoose.model('User', userSchema);
